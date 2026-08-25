@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import { getDisplayName } from "@/lib/user";
 
 type Member = { id: string; name: string | null; email: string };
 
@@ -74,9 +75,7 @@ export function AddExpenseForm({
         >
           {members.map((member) => (
             <option key={member.id} value={member.id}>
-              {member.id === currentUserId
-                ? "You"
-                : (member.name ?? member.email)}
+              {member.id === currentUserId ? "You" : getDisplayName(member)}
             </option>
           ))}
         </select>

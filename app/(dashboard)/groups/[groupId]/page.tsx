@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { getGroupWithMembers } from "@/lib/groups";
 import { getGroupExpenses } from "@/lib/expenses";
 import { getCurrencySymbol } from "@/lib/currency";
+import { getDisplayName } from "@/lib/user";
 import { InviteMemberForm } from "./InviteMemberForm";
 import { AddExpenseForm } from "./AddExpenseForm";
 
@@ -44,7 +45,7 @@ export default async function GroupDetailPage({
               className="flex items-center justify-between rounded-lg border border-zinc-200 px-4 py-3 dark:border-zinc-800"
             >
               <span className="font-medium text-zinc-900 dark:text-zinc-50">
-                {member.user.name ?? member.user.email}
+                {getDisplayName(member.user)}
               </span>
               <span className="text-sm text-zinc-500 dark:text-zinc-400">
                 {member.user.email}
@@ -95,7 +96,7 @@ export default async function GroupDetailPage({
                     Paid by{" "}
                     {expense.payer.id === user.id
                       ? "you"
-                      : (expense.payer.name ?? expense.payer.email)}{" "}
+                      : getDisplayName(expense.payer)}{" "}
                     · {new Date(expense.createdAt).toLocaleDateString()}
                   </p>
                 </div>
