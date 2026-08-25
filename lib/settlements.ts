@@ -2,6 +2,8 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { calculateGroupBalances, simplifyDebts } from "@/lib/balances";
 import { getDisplayName } from "@/lib/user";
+import { getCurrencySymbol } from "@/lib/currency";
+import { logActivity, ActivityActionType } from "@/lib/activity";
 
 export class SettlementValidationError extends Error {}
 
@@ -15,7 +17,8 @@ export async function recordSettlement(
   groupId: string,
   fromUserId: string,
   toUserId: string,
-  amount: Prisma.Decimal
+  amount: Prisma.Decimal,
+  actorUserId: string
 ) {
   if (amount.lessThanOrEqualTo(0)) {
     throw new SettlementValidationError("Amount must be greater than 0");
@@ -39,9 +42,30 @@ export async function recordSettlement(
     );
   }
 
-  return prisma.settlement.create({
+  const settlement = await prisma.settlement.create({
     data: { groupId, fromUserId, toUserId, amount },
   });
+
+  const otherUserId = actorUserId === fromUserId ? toUserId : fromUserId;
+  const [group, otherUser] = await Promise.all([
+    prisma.group.findUniqueOrThrow({
+      where: { id: groupId },
+      select: { currency: true },
+    }),
+    prisma.user.findUniqueOrThrow({
+      where: { id: otherUserId },
+      select: { name: true, email: true },
+    }),
+  ]);
+
+  await logActivity(
+    groupId,
+    actorUserId,
+    ActivityActionType.SETTLEMENT_RECORDED,
+    `settled ${getCurrencySymbol(group.currency)}${amount.toFixed(2)} with ${getDisplayName(otherUser)}`
+  );
+
+  return settlement;
 }
 
 export async function getGroupSettlements(groupId: string) {

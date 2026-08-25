@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import type { Currency } from "@prisma/client";
+import { logActivity, ActivityActionType } from "@/lib/activity";
+import { getDisplayName } from "@/lib/user";
 
 export function getUserGroups(userId: string) {
   return prisma.group.findMany({
@@ -9,12 +11,12 @@ export function getUserGroups(userId: string) {
   });
 }
 
-export function createGroupForUser(
+export async function createGroupForUser(
   userId: string,
   name: string,
   currency?: Currency
 ) {
-  return prisma.group.create({
+  const group = await prisma.group.create({
     data: {
       name,
       createdBy: userId,
@@ -23,6 +25,15 @@ export function createGroupForUser(
     },
     include: { _count: { select: { members: true } } },
   });
+
+  await logActivity(
+    group.id,
+    userId,
+    ActivityActionType.GROUP_CREATED,
+    "created the group"
+  );
+
+  return group;
 }
 
 export async function isGroupMember(groupId: string, userId: string) {
@@ -44,7 +55,11 @@ export function getGroupWithMembers(groupId: string) {
   });
 }
 
-export async function addMemberToGroupByEmail(groupId: string, email: string) {
+export async function addMemberToGroupByEmail(
+  groupId: string,
+  email: string,
+  actorUserId: string
+) {
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
     return { status: "user_not_found" as const };
@@ -61,5 +76,13 @@ export async function addMemberToGroupByEmail(groupId: string, email: string) {
     data: { groupId, userId: user.id },
     include: { user: { select: { id: true, name: true, email: true } } },
   });
+
+  await logActivity(
+    groupId,
+    actorUserId,
+    ActivityActionType.MEMBER_ADDED,
+    `added ${getDisplayName(member.user)} to the group`
+  );
+
   return { status: "added" as const, member };
 }

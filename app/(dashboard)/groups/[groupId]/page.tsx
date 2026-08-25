@@ -4,11 +4,30 @@ import { getGroupWithMembers } from "@/lib/groups";
 import { getGroupExpenses } from "@/lib/expenses";
 import { calculateGroupBalances, simplifyDebts } from "@/lib/balances";
 import { getGroupSettlements } from "@/lib/settlements";
+import { getGroupActivity } from "@/lib/activity";
 import { getCurrencySymbol } from "@/lib/currency";
 import { getDisplayName } from "@/lib/user";
 import { InviteMemberForm } from "./InviteMemberForm";
 import { AddExpenseForm } from "./AddExpenseForm";
 import { SettleUpAction } from "./SettleUpAction";
+
+function formatRelativeTime(date: Date): string {
+  const diffSec = Math.floor((Date.now() - date.getTime()) / 1000);
+
+  if (diffSec < 60) return "just now";
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `${diffMin} minute${diffMin === 1 ? "" : "s"} ago`;
+  const diffHour = Math.floor(diffMin / 60);
+  if (diffHour < 24) return `${diffHour} hour${diffHour === 1 ? "" : "s"} ago`;
+  const diffDay = Math.floor(diffHour / 24);
+  if (diffDay < 7) return `${diffDay} day${diffDay === 1 ? "" : "s"} ago`;
+
+  return date.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
 
 export default async function GroupDetailPage({
   params,
@@ -47,6 +66,7 @@ export default async function GroupDetailPage({
   );
 
   const settlements = await getGroupSettlements(group.id);
+  const activity = await getGroupActivity(group.id);
 
   return (
     <div className="mx-auto w-full max-w-2xl flex-1 px-6 py-10">
@@ -139,6 +159,31 @@ export default async function GroupDetailPage({
                   month: "short",
                   year: "numeric",
                 })}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="mt-8">
+        <h2 className="mb-3 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+          Activity
+        </h2>
+        {activity.length === 0 ? (
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            No activity yet.
+          </p>
+        ) : (
+          <ul className="space-y-2">
+            {activity.map((entry) => (
+              <li
+                key={entry.id}
+                className="rounded-lg border border-zinc-200 px-4 py-3 text-sm text-zinc-600 dark:border-zinc-800 dark:text-zinc-400"
+              >
+                <span className="font-medium text-zinc-900 dark:text-zinc-50">
+                  {entry.userId === user.id ? "You" : entry.actorName}
+                </span>{" "}
+                {entry.description} · {formatRelativeTime(entry.createdAt)}
               </li>
             ))}
           </ul>

@@ -118,7 +118,14 @@ export async function POST(
 
   let expense;
   try {
-    expense = await createGroupExpense(groupId, title, amount, paidBy, splitInput);
+    expense = await createGroupExpense(
+      groupId,
+      title,
+      amount,
+      paidBy,
+      splitInput,
+      user.id
+    );
   } catch (err) {
     if (err instanceof SplitValidationError) {
       return NextResponse.json({ error: err.message }, { status: 400 });

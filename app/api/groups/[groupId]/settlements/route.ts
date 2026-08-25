@@ -98,7 +98,13 @@ export async function POST(
 
   let settlement;
   try {
-    settlement = await recordSettlement(groupId, fromUserId, toUserId, amount);
+    settlement = await recordSettlement(
+      groupId,
+      fromUserId,
+      toUserId,
+      amount,
+      user.id
+    );
   } catch (err) {
     if (err instanceof SettlementValidationError) {
       return NextResponse.json({ error: err.message }, { status: 400 });

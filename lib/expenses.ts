@@ -1,5 +1,7 @@
 import { Prisma, SplitType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { logActivity, ActivityActionType } from "@/lib/activity";
+import { getCurrencySymbol } from "@/lib/currency";
 
 const EXPENSE_INCLUDE = {
   payer: { select: { id: true, name: true, email: true } },
@@ -145,12 +147,13 @@ export async function createGroupExpense(
   title: string,
   amount: Prisma.Decimal,
   paidBy: string,
-  splitInput: CreateExpenseInput
+  splitInput: CreateExpenseInput,
+  actorUserId: string
 ) {
-  const members = await prisma.groupMember.findMany({
-    where: { groupId },
-    select: { userId: true },
-  });
+  const [members, group] = await Promise.all([
+    prisma.groupMember.findMany({ where: { groupId }, select: { userId: true } }),
+    prisma.group.findUniqueOrThrow({ where: { id: groupId }, select: { currency: true } }),
+  ]);
   const memberIds = members.map((m) => m.userId);
 
   let splits: Split[];
@@ -166,7 +169,7 @@ export async function createGroupExpense(
       break;
   }
 
-  return prisma.expense.create({
+  const expense = await prisma.expense.create({
     data: {
       groupId,
       paidBy,
@@ -177,4 +180,13 @@ export async function createGroupExpense(
     },
     include: EXPENSE_INCLUDE,
   });
+
+  await logActivity(
+    groupId,
+    actorUserId,
+    ActivityActionType.EXPENSE_ADDED,
+    `added "${title}" (${getCurrencySymbol(group.currency)}${amount.toFixed(2)})`
+  );
+
+  return expense;
 }

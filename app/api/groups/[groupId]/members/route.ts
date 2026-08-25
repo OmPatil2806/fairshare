@@ -58,7 +58,7 @@ export async function POST(
     );
   }
 
-  const result = await addMemberToGroupByEmail(groupId, email);
+  const result = await addMemberToGroupByEmail(groupId, email, user.id);
 
   if (result.status === "user_not_found") {
     return NextResponse.json(
