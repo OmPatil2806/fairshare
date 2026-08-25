@@ -7,6 +7,7 @@ import { getGroupSettlements } from "@/lib/settlements";
 import { getGroupActivity } from "@/lib/activity";
 import { getCurrencySymbol } from "@/lib/currency";
 import { getDisplayName } from "@/lib/user";
+import { cardClass, sectionHeadingClass, mutedTextClass } from "@/lib/ui";
 import { InviteMemberForm } from "./InviteMemberForm";
 import { AddExpenseForm } from "./AddExpenseForm";
 import { SettleUpAction } from "./SettleUpAction";
@@ -70,17 +71,15 @@ export default async function GroupDetailPage({
   const activity = await getGroupActivity(group.id);
 
   return (
-    <div className="mx-auto w-full max-w-2xl flex-1 px-6 py-10">
-      <h1 className="mb-8 text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
+    <div className="mx-auto w-full max-w-2xl flex-1 px-4 py-10 sm:px-6">
+      <h1 className="mb-8 text-2xl font-semibold break-words text-zinc-900 dark:text-zinc-50">
         {group.name} ({currencySymbol})
       </h1>
 
       <section>
-        <h2 className="mb-3 text-sm font-medium text-zinc-500 dark:text-zinc-400">
-          Balances
-        </h2>
+        <h2 className={sectionHeadingClass}>Balances</h2>
         {myBalances.length === 0 ? (
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <p className={mutedTextClass}>
             You&apos;re all settled up! 🎉
           </p>
         ) : (
@@ -101,7 +100,7 @@ export default async function GroupDetailPage({
                       ? `You owe ${nameFor(balance.to)} ${currencySymbol}${balance.amount.toFixed(2)}`
                       : `${nameFor(balance.from)} owes you ${currencySymbol}${balance.amount.toFixed(2)}`}
                   </span>
-                  <span className="flex items-center gap-3">
+                  <span className="flex flex-wrap items-center gap-3">
                     <SettleUpAction
                       groupId={group.id}
                       fromUserId={balance.from}
@@ -129,10 +128,7 @@ export default async function GroupDetailPage({
             </h3>
             <ul className="space-y-2">
               {otherBalances.map((balance, index) => (
-                <li
-                  key={index}
-                  className="rounded-lg border border-zinc-200 px-4 py-3 text-sm text-zinc-600 dark:border-zinc-800 dark:text-zinc-400"
-                >
+                <li key={index} className={`${mutedTextClass} ${cardClass}`}>
                   {nameFor(balance.from)} owes {nameFor(balance.to)}{" "}
                   {currencySymbol}
                   {balance.amount.toFixed(2)}
@@ -144,20 +140,13 @@ export default async function GroupDetailPage({
       </section>
 
       <section className="mt-8">
-        <h2 className="mb-3 text-sm font-medium text-zinc-500 dark:text-zinc-400">
-          Settlement History
-        </h2>
+        <h2 className={sectionHeadingClass}>Settlement History</h2>
         {settlements.length === 0 ? (
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            No settlements recorded yet.
-          </p>
+          <p className={mutedTextClass}>No settlements recorded yet.</p>
         ) : (
           <ul className="space-y-2">
             {settlements.map((settlement) => (
-              <li
-                key={settlement.id}
-                className="rounded-lg border border-zinc-200 px-4 py-3 text-sm text-zinc-600 dark:border-zinc-800 dark:text-zinc-400"
-              >
+              <li key={settlement.id} className={`${mutedTextClass} ${cardClass}`}>
                 {settlement.fromUserId === user.id ? "You" : settlement.fromName}{" "}
                 paid{" "}
                 {settlement.toUserId === user.id ? "you" : settlement.toName}{" "}
@@ -175,20 +164,13 @@ export default async function GroupDetailPage({
       </section>
 
       <section className="mt-8">
-        <h2 className="mb-3 text-sm font-medium text-zinc-500 dark:text-zinc-400">
-          Activity
-        </h2>
+        <h2 className={sectionHeadingClass}>Activity</h2>
         {activity.length === 0 ? (
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            No activity yet.
-          </p>
+          <p className={mutedTextClass}>No activity yet.</p>
         ) : (
           <ul className="space-y-2">
             {activity.map((entry) => (
-              <li
-                key={entry.id}
-                className="rounded-lg border border-zinc-200 px-4 py-3 text-sm text-zinc-600 dark:border-zinc-800 dark:text-zinc-400"
-              >
+              <li key={entry.id} className={`${mutedTextClass} ${cardClass}`}>
                 <span className="font-medium text-zinc-900 dark:text-zinc-50">
                   {entry.userId === user.id ? "You" : entry.actorName}
                 </span>{" "}
@@ -200,37 +182,29 @@ export default async function GroupDetailPage({
       </section>
 
       <section className="mt-8">
-        <h2 className="mb-3 text-sm font-medium text-zinc-500 dark:text-zinc-400">
-          Members
-        </h2>
+        <h2 className={sectionHeadingClass}>Members</h2>
         <ul className="space-y-2">
           {group.members.map((member) => (
             <li
               key={member.id}
-              className="flex items-center justify-between rounded-lg border border-zinc-200 px-4 py-3 dark:border-zinc-800"
+              className={`flex flex-wrap items-center justify-between gap-x-3 gap-y-1 ${cardClass}`}
             >
               <span className="font-medium text-zinc-900 dark:text-zinc-50">
                 {getDisplayName(member.user)}
               </span>
-              <span className="text-sm text-zinc-500 dark:text-zinc-400">
-                {member.user.email}
-              </span>
+              <span className={mutedTextClass}>{member.user.email}</span>
             </li>
           ))}
         </ul>
       </section>
 
       <section className="mt-8">
-        <h2 className="mb-3 text-sm font-medium text-zinc-500 dark:text-zinc-400">
-          Invite member
-        </h2>
+        <h2 className={sectionHeadingClass}>Invite member</h2>
         <InviteMemberForm groupId={group.id} />
       </section>
 
       <section className="mt-8">
-        <h2 className="mb-3 text-sm font-medium text-zinc-500 dark:text-zinc-400">
-          Add expense
-        </h2>
+        <h2 className={sectionHeadingClass}>Add expense</h2>
         <AddExpenseForm
           groupId={group.id}
           members={members}
@@ -240,25 +214,23 @@ export default async function GroupDetailPage({
       </section>
 
       <section className="mt-8">
-        <h2 className="mb-3 text-sm font-medium text-zinc-500 dark:text-zinc-400">
-          Expenses
-        </h2>
+        <h2 className={sectionHeadingClass}>Expenses</h2>
         {expenses.length === 0 ? (
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            No expenses yet.
+          <p className={mutedTextClass}>
+            No expenses yet — add one to get started.
           </p>
         ) : (
           <ul className="space-y-2">
             {expenses.map((expense) => (
               <li
                 key={expense.id}
-                className="flex items-center justify-between rounded-lg border border-zinc-200 px-4 py-3 dark:border-zinc-800"
+                className={`flex flex-wrap items-center justify-between gap-x-3 gap-y-1 ${cardClass}`}
               >
                 <div>
                   <p className="font-medium text-zinc-900 dark:text-zinc-50">
                     {expense.title}
                   </p>
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                  <p className={mutedTextClass}>
                     Paid by{" "}
                     {expense.payer.id === user.id
                       ? "you"

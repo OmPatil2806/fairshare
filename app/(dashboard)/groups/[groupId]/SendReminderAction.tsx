@@ -2,6 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import {
+  linkButtonClass,
+  errorTextSmallClass,
+  successTextSmallClass,
+} from "@/lib/ui";
 
 export function SendReminderAction({
   groupId,
@@ -44,16 +49,14 @@ export function SendReminderAction({
         type="button"
         onClick={handleClick}
         disabled={status === "sending"}
-        className="shrink-0 text-xs font-medium underline underline-offset-2 opacity-80 hover:opacity-100 disabled:opacity-50"
+        className={`shrink-0 ${linkButtonClass}`}
       >
         {status === "sending" ? "Sending…" : "Send reminder"}
       </button>
       {message && (
         <span
           className={
-            status === "error"
-              ? "text-xs font-medium text-red-700 dark:text-red-400"
-              : "text-xs font-medium text-green-700 dark:text-green-400"
+            status === "error" ? errorTextSmallClass : successTextSmallClass
           }
         >
           {message}

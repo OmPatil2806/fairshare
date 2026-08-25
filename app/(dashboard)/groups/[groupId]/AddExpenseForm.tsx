@@ -3,6 +3,14 @@
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { getDisplayName } from "@/lib/user";
+import {
+  inputClass,
+  inputBaseClass,
+  buttonPrimaryClass,
+  errorTextClass,
+  mutedTextSmallClass,
+  errorTextSmallClass,
+} from "@/lib/ui";
 
 type Member = { id: string; name: string | null; email: string };
 type SplitTypeOption = "EQUAL" | "CUSTOM" | "PERCENTAGE";
@@ -104,7 +112,7 @@ export function AddExpenseForm({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Expense title"
-            className="min-w-[10rem] flex-1 rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900"
+            className={`min-w-[10rem] flex-1 ${inputClass}`}
           />
           <input
             value={amount}
@@ -113,12 +121,12 @@ export function AddExpenseForm({
             step="0.01"
             min="0"
             placeholder="Amount"
-            className="w-28 rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900"
+            className={`w-full px-3 py-2 text-sm sm:w-28 ${inputBaseClass}`}
           />
           <select
             value={paidBy}
             onChange={(e) => setPaidBy(e.target.value)}
-            className="rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900"
+            className={`w-full px-3 py-2 text-sm sm:w-auto ${inputBaseClass}`}
           >
             {members.map((member) => (
               <option key={member.id} value={member.id}>
@@ -129,7 +137,7 @@ export function AddExpenseForm({
           <select
             value={splitType}
             onChange={(e) => setSplitType(e.target.value as SplitTypeOption)}
-            className="rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900"
+            className={`w-full px-3 py-2 text-sm sm:w-auto ${inputBaseClass}`}
           >
             <option value="EQUAL">Equal</option>
             <option value="CUSTOM">Custom</option>
@@ -159,17 +167,11 @@ export function AddExpenseForm({
                   step="0.01"
                   min="0"
                   placeholder="0.00"
-                  className="w-24 rounded-md border border-zinc-300 px-2 py-1 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900"
+                  className={`w-24 px-2 py-1 text-sm ${inputBaseClass}`}
                 />
               </div>
             ))}
-            <p
-              className={
-                customValid
-                  ? "text-xs text-zinc-500 dark:text-zinc-400"
-                  : "text-xs font-medium text-red-600 dark:text-red-400"
-              }
-            >
+            <p className={customValid ? mutedTextSmallClass : errorTextSmallClass}>
               {currencySymbol}
               {customTotal.toFixed(2)} of {currencySymbol}
               {amountNum.toFixed(2)} allocated
@@ -199,17 +201,11 @@ export function AddExpenseForm({
                   step="0.01"
                   min="0"
                   placeholder="0"
-                  className="w-24 rounded-md border border-zinc-300 px-2 py-1 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900"
+                  className={`w-24 px-2 py-1 text-sm ${inputBaseClass}`}
                 />
               </div>
             ))}
-            <p
-              className={
-                percentageValid
-                  ? "text-xs text-zinc-500 dark:text-zinc-400"
-                  : "text-xs font-medium text-red-600 dark:text-red-400"
-              }
-            >
+            <p className={percentageValid ? mutedTextSmallClass : errorTextSmallClass}>
               {percentageTotal.toFixed(2)}% of 100% allocated
             </p>
           </div>
@@ -218,14 +214,12 @@ export function AddExpenseForm({
         <button
           type="submit"
           disabled={!canSubmit}
-          className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+          className={`w-full sm:w-auto ${buttonPrimaryClass}`}
         >
           {pending ? "Adding…" : "Add expense"}
         </button>
       </form>
-      {error && (
-        <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>
-      )}
+      {error && <p className={`mt-2 ${errorTextClass}`}>{error}</p>}
     </div>
   );
 }

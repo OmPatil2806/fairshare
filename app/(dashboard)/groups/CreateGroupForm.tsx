@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import { inputClass, buttonPrimaryClass, errorTextClass } from "@/lib/ui";
 
 const CURRENCY_OPTIONS = [
   { value: "INR", label: "₹ INR" },
@@ -45,17 +46,17 @@ export function CreateGroupForm() {
 
   return (
     <div>
-      <form onSubmit={handleSubmit} className="flex gap-2">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-2 sm:flex-row">
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="New group name"
-          className="flex-1 rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900"
+          className={`sm:flex-1 ${inputClass}`}
         />
         <select
           value={currency}
           onChange={(e) => setCurrency(e.target.value)}
-          className="rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900"
+          className={`sm:w-auto ${inputClass}`}
         >
           {CURRENCY_OPTIONS.map((option) => (
             <option key={option.value} value={option.value}>
@@ -66,14 +67,12 @@ export function CreateGroupForm() {
         <button
           type="submit"
           disabled={pending}
-          className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+          className={`w-full sm:w-auto ${buttonPrimaryClass}`}
         >
           {pending ? "Creating…" : "Create group"}
         </button>
       </form>
-      {error && (
-        <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>
-      )}
+      {error && <p className={`mt-2 ${errorTextClass}`}>{error}</p>}
     </div>
   );
 }
