@@ -3,10 +3,12 @@ import { getCurrentUser } from "@/lib/auth";
 import { getGroupWithMembers } from "@/lib/groups";
 import { getGroupExpenses } from "@/lib/expenses";
 import { calculateGroupBalances, simplifyDebts } from "@/lib/balances";
+import { getGroupSettlements } from "@/lib/settlements";
 import { getCurrencySymbol } from "@/lib/currency";
 import { getDisplayName } from "@/lib/user";
 import { InviteMemberForm } from "./InviteMemberForm";
 import { AddExpenseForm } from "./AddExpenseForm";
+import { SettleUpAction } from "./SettleUpAction";
 
 export default async function GroupDetailPage({
   params,
@@ -44,6 +46,8 @@ export default async function GroupDetailPage({
     (b) => b.from !== user.id && b.to !== user.id
   );
 
+  const settlements = await getGroupSettlements(group.id);
+
   return (
     <div className="mx-auto w-full max-w-2xl flex-1 px-6 py-10">
       <h1 className="mb-8 text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
@@ -67,13 +71,22 @@ export default async function GroupDetailPage({
                   key={index}
                   className={
                     youOwe
-                      ? "rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300"
-                      : "rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700 dark:border-green-900 dark:bg-green-950 dark:text-green-300"
+                      ? "flex flex-wrap items-center justify-between gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300"
+                      : "flex flex-wrap items-center justify-between gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700 dark:border-green-900 dark:bg-green-950 dark:text-green-300"
                   }
                 >
-                  {youOwe
-                    ? `You owe ${nameFor(balance.to)} ${currencySymbol}${balance.amount.toFixed(2)}`
-                    : `${nameFor(balance.from)} owes you ${currencySymbol}${balance.amount.toFixed(2)}`}
+                  <span>
+                    {youOwe
+                      ? `You owe ${nameFor(balance.to)} ${currencySymbol}${balance.amount.toFixed(2)}`
+                      : `${nameFor(balance.from)} owes you ${currencySymbol}${balance.amount.toFixed(2)}`}
+                  </span>
+                  <SettleUpAction
+                    groupId={group.id}
+                    fromUserId={balance.from}
+                    toUserId={balance.to}
+                    outstandingAmount={balance.amount.toFixed(2)}
+                    currencySymbol={currencySymbol}
+                  />
                 </li>
               );
             })}
@@ -98,6 +111,37 @@ export default async function GroupDetailPage({
               ))}
             </ul>
           </div>
+        )}
+      </section>
+
+      <section className="mt-8">
+        <h2 className="mb-3 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+          Settlement History
+        </h2>
+        {settlements.length === 0 ? (
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            No settlements recorded yet.
+          </p>
+        ) : (
+          <ul className="space-y-2">
+            {settlements.map((settlement) => (
+              <li
+                key={settlement.id}
+                className="rounded-lg border border-zinc-200 px-4 py-3 text-sm text-zinc-600 dark:border-zinc-800 dark:text-zinc-400"
+              >
+                {settlement.fromUserId === user.id ? "You" : settlement.fromName}{" "}
+                paid{" "}
+                {settlement.toUserId === user.id ? "you" : settlement.toName}{" "}
+                {currencySymbol}
+                {settlement.amount.toFixed(2)} ·{" "}
+                {new Date(settlement.settledAt).toLocaleDateString("en-GB", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })}
+              </li>
+            ))}
+          </ul>
         )}
       </section>
 
