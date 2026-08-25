@@ -23,10 +23,17 @@ model User {
   settlementsTo    Settlement[]   @relation("SettlementTo")
 }
 
+enum Currency {
+  INR
+  USD
+  EUR
+}
+
 model Group {
   id        String   @id @default(cuid())
   name      String
   createdBy String
+  currency  Currency @default(INR)
   createdAt DateTime @default(now())
 
   members     GroupMember[]

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { Currency } from "@prisma/client";
 import { getCurrentUser } from "@/lib/auth";
 import { getUserGroups, createGroupForUser } from "@/lib/groups";
 
@@ -28,6 +29,17 @@ export async function POST(request: Request) {
     );
   }
 
-  const group = await createGroupForUser(user.id, name);
+  let currency: Currency | undefined;
+  if (body?.currency !== undefined) {
+    if (!Object.values(Currency).includes(body.currency)) {
+      return NextResponse.json(
+        { error: "Invalid currency" },
+        { status: 400 }
+      );
+    }
+    currency = body.currency as Currency;
+  }
+
+  const group = await createGroupForUser(user.id, name, currency);
   return NextResponse.json({ group }, { status: 201 });
 }

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { getUserGroups } from "@/lib/groups";
+import { getCurrencySymbol } from "@/lib/currency";
 import { CreateGroupForm } from "./CreateGroupForm";
 
 export default async function GroupsPage() {
@@ -29,7 +30,7 @@ export default async function GroupsPage() {
               className="flex items-center justify-between rounded-lg border border-zinc-200 px-4 py-3 dark:border-zinc-800"
             >
               <span className="font-medium text-zinc-900 dark:text-zinc-50">
-                {group.name}
+                {group.name} ({getCurrencySymbol(group.currency)})
               </span>
               <span className="text-sm text-zinc-500 dark:text-zinc-400">
                 {group._count.members}{" "}

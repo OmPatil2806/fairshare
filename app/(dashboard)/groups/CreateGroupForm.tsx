@@ -3,9 +3,16 @@
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
+const CURRENCY_OPTIONS = [
+  { value: "INR", label: "₹ INR" },
+  { value: "USD", label: "$ USD" },
+  { value: "EUR", label: "€ EUR" },
+] as const;
+
 export function CreateGroupForm() {
   const router = useRouter();
   const [name, setName] = useState("");
+  const [currency, setCurrency] = useState<string>("INR");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -20,7 +27,7 @@ export function CreateGroupForm() {
     const res = await fetch("/api/groups", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: trimmed }),
+      body: JSON.stringify({ name: trimmed, currency }),
     });
 
     setPending(false);
@@ -32,6 +39,7 @@ export function CreateGroupForm() {
     }
 
     setName("");
+    setCurrency("INR");
     router.refresh();
   }
 
@@ -44,6 +52,17 @@ export function CreateGroupForm() {
           placeholder="New group name"
           className="flex-1 rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900"
         />
+        <select
+          value={currency}
+          onChange={(e) => setCurrency(e.target.value)}
+          className="rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900"
+        >
+          {CURRENCY_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
         <button
           type="submit"
           disabled={pending}
