@@ -137,6 +137,7 @@ export default async function GroupDetailPage({
           groupId={group.id}
           members={members}
           currentUserId={user.id}
+          currencySymbol={currencySymbol}
         />
       </section>
 
