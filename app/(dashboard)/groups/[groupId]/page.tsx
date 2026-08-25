@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { getGroupWithMembers } from "@/lib/groups";
 import { getGroupExpenses } from "@/lib/expenses";
+import { calculateGroupBalances, simplifyDebts } from "@/lib/balances";
 import { getCurrencySymbol } from "@/lib/currency";
 import { getDisplayName } from "@/lib/user";
 import { InviteMemberForm } from "./InviteMemberForm";
@@ -28,6 +29,21 @@ export default async function GroupDetailPage({
   const currencySymbol = getCurrencySymbol(group.currency);
   const members = group.members.map((m) => m.user);
 
+  const membersById = new Map(group.members.map((m) => [m.userId, m.user]));
+  const nameFor = (userId: string) => {
+    const member = membersById.get(userId);
+    return member ? getDisplayName(member) : "Someone";
+  };
+
+  const pairwiseBalances = await calculateGroupBalances(group.id);
+  const simplifiedBalances = simplifyDebts(pairwiseBalances);
+  const myBalances = simplifiedBalances.filter(
+    (b) => b.from === user.id || b.to === user.id
+  );
+  const otherBalances = simplifiedBalances.filter(
+    (b) => b.from !== user.id && b.to !== user.id
+  );
+
   return (
     <div className="mx-auto w-full max-w-2xl flex-1 px-6 py-10">
       <h1 className="mb-8 text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
@@ -35,6 +51,57 @@ export default async function GroupDetailPage({
       </h1>
 
       <section>
+        <h2 className="mb-3 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+          Balances
+        </h2>
+        {myBalances.length === 0 ? (
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            You&apos;re all settled up! 🎉
+          </p>
+        ) : (
+          <ul className="space-y-2">
+            {myBalances.map((balance, index) => {
+              const youOwe = balance.from === user.id;
+              return (
+                <li
+                  key={index}
+                  className={
+                    youOwe
+                      ? "rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300"
+                      : "rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700 dark:border-green-900 dark:bg-green-950 dark:text-green-300"
+                  }
+                >
+                  {youOwe
+                    ? `You owe ${nameFor(balance.to)} ${currencySymbol}${balance.amount.toFixed(2)}`
+                    : `${nameFor(balance.from)} owes you ${currencySymbol}${balance.amount.toFixed(2)}`}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+
+        {otherBalances.length > 0 && (
+          <div className="mt-4">
+            <h3 className="mb-2 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+              Other balances in this group
+            </h3>
+            <ul className="space-y-2">
+              {otherBalances.map((balance, index) => (
+                <li
+                  key={index}
+                  className="rounded-lg border border-zinc-200 px-4 py-3 text-sm text-zinc-600 dark:border-zinc-800 dark:text-zinc-400"
+                >
+                  {nameFor(balance.from)} owes {nameFor(balance.to)}{" "}
+                  {currencySymbol}
+                  {balance.amount.toFixed(2)}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </section>
+
+      <section className="mt-8">
         <h2 className="mb-3 text-sm font-medium text-zinc-500 dark:text-zinc-400">
           Members
         </h2>
