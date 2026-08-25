@@ -6,6 +6,7 @@ export const ActivityActionType = {
   MEMBER_ADDED: "MEMBER_ADDED",
   EXPENSE_ADDED: "EXPENSE_ADDED",
   SETTLEMENT_RECORDED: "SETTLEMENT_RECORDED",
+  REMINDER_SENT: "REMINDER_SENT",
 } as const;
 
 export function logActivity(

@@ -10,6 +10,7 @@ import { getDisplayName } from "@/lib/user";
 import { InviteMemberForm } from "./InviteMemberForm";
 import { AddExpenseForm } from "./AddExpenseForm";
 import { SettleUpAction } from "./SettleUpAction";
+import { SendReminderAction } from "./SendReminderAction";
 
 function formatRelativeTime(date: Date): string {
   const diffSec = Math.floor((Date.now() - date.getTime()) / 1000);
@@ -100,13 +101,21 @@ export default async function GroupDetailPage({
                       ? `You owe ${nameFor(balance.to)} ${currencySymbol}${balance.amount.toFixed(2)}`
                       : `${nameFor(balance.from)} owes you ${currencySymbol}${balance.amount.toFixed(2)}`}
                   </span>
-                  <SettleUpAction
-                    groupId={group.id}
-                    fromUserId={balance.from}
-                    toUserId={balance.to}
-                    outstandingAmount={balance.amount.toFixed(2)}
-                    currencySymbol={currencySymbol}
-                  />
+                  <span className="flex items-center gap-3">
+                    <SettleUpAction
+                      groupId={group.id}
+                      fromUserId={balance.from}
+                      toUserId={balance.to}
+                      outstandingAmount={balance.amount.toFixed(2)}
+                      currencySymbol={currencySymbol}
+                    />
+                    {!youOwe && (
+                      <SendReminderAction
+                        groupId={group.id}
+                        toUserId={balance.from}
+                      />
+                    )}
+                  </span>
                 </li>
               );
             })}
